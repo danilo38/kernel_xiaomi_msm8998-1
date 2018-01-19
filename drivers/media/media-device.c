@@ -44,9 +44,9 @@ static int media_device_close(struct file *filp)
 	return 0;
 }
 
-static int media_device_get_info(struct media_device *dev,
-				 struct media_device_info __user *__info)
+static long media_device_get_info(struct media_device *dev, void *arg)
 {
+	struct media_device_info *__info = (struct media_device_info __user *)arg;
 	struct media_device_info info;
 
 	memset(&info, 0, sizeof(info));
@@ -87,10 +87,10 @@ static struct media_entity *find_entity(struct media_device *mdev, u32 id)
 	return NULL;
 }
 
-static long media_device_enum_entities(struct media_device *mdev,
-				       struct media_entity_desc __user *uent)
+static long media_device_enum_entities(struct media_device *mdev, void *arg)
 {
 	struct media_entity *ent;
+	struct media_entity_desc *uent = (struct media_entity_desc __user *)arg;
 	struct media_entity_desc u_ent;
 
 	memset(&u_ent, 0, sizeof(u_ent));
@@ -125,9 +125,9 @@ static void media_device_kpad_to_upad(const struct media_pad *kpad,
 	upad->flags = kpad->flags;
 }
 
-static long __media_device_enum_links(struct media_device *mdev,
-				      struct media_links_enum *links)
+static long __media_device_enum_links(struct media_device *mdev, void *arg)
 {
+	struct media_links_enum *links = (struct media_links_enum __user *)arg;
 	struct media_entity *entity;
 
 	entity = find_entity(mdev, links->entity);
@@ -173,9 +173,9 @@ static long __media_device_enum_links(struct media_device *mdev,
 	return 0;
 }
 
-static long media_device_enum_links(struct media_device *mdev,
-				    struct media_links_enum __user *ulinks)
+static long media_device_enum_links(struct media_device *mdev, void *arg)
 {
+	struct media_links_enum *ulinks = (struct media_links_enum *)arg;
 	struct media_links_enum links;
 	int rval;
 
@@ -192,10 +192,10 @@ static long media_device_enum_links(struct media_device *mdev,
 	return 0;
 }
 
-static long media_device_setup_link(struct media_device *mdev,
-				    struct media_link_desc __user *_ulink)
+static long media_device_setup_link(struct media_device *mdev, void *arg)
 {
 	struct media_link *link = NULL;
+	struct media_link_desc *_ulink = (struct media_link_desc __user *)arg;
 	struct media_link_desc ulink;
 	struct media_entity *source;
 	struct media_entity *sink;
