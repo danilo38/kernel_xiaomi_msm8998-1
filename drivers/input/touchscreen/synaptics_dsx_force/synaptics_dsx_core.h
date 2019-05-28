@@ -427,7 +427,8 @@ struct synaptics_rmi4_data {
 	struct pinctrl_state *pinctrl_state_suspend;
 	struct synaptics_dsx_factory_param *factory_param;
 
-	struct pm_qos_request pm_qos_req;
+	struct pm_qos_request pm_i2c_req;
+	struct pm_qos_request pm_touch_req;
 
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_TEST_REPORTING_FORCE
 	struct completion dump_completion;
@@ -494,6 +495,8 @@ void synaptics_rmi4_new_function_force(struct synaptics_rmi4_exp_fn *exp_fn_modu
 		bool insert);
 
 int synaptics_fw_updater(const unsigned char *fw_data);
+
+unsigned int synaptics_rmi4_i2c_irq(void);
 
 static inline int synaptics_rmi4_reg_read(
 		struct synaptics_rmi4_data *rmi4_data,
