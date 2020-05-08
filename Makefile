@@ -677,6 +677,10 @@ KBUILD_CFLAGS   += -O2
 endif
 endif
 
+ifeq ($(cc-name),clang)
+KBUILD_CFLAGS   += $(call cc-option,-fsanitize=local-init)
+endif
+
 ifdef CONFIG_CC_WERROR
 KBUILD_CFLAGS	+= -Werror
 endif
