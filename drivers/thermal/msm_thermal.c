@@ -1307,6 +1307,7 @@ static int create_cpu_topology_sysfs(void)
 {
 	int ret = 0;
 	struct kobject *module_kobj = NULL;
+	struct kobject *cluster_info_kobj = NULL;
 
 	if (!cluster_info_probed) {
 		cluster_info_nodes_called = true;
@@ -1318,16 +1319,29 @@ static int create_cpu_topology_sysfs(void)
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
 		pr_err("cannot find kobject\n");
-		return -ENODEV;
+		ret = -ENOENT;
+		goto cpu_topology_sysfs_exit;
+	}
+
+	cluster_info_kobj = kobject_create_and_add("cluster_info", module_kobj);
+	if (!cluster_info_kobj) {
+		pr_err("cannot create cluster_info kobject\n");
+		ret = -ENOMEM;
+		goto cpu_topology_sysfs_exit;
 	}
 
 	sysfs_attr_init(&cluster_info_attr.attr);
-	ret = sysfs_create_file(module_kobj, &cluster_info_attr.attr);
+	ret = sysfs_create_file(cluster_info_kobj, &cluster_info_attr.attr);
 	if (ret) {
 		pr_err("cannot create cluster info attr group. err:%d\n", ret);
-		return ret;
+		goto cpu_topology_sysfs_exit;
 	}
 
+	return ret;
+
+cpu_topology_sysfs_exit:
+	if (ret && cluster_info_kobj)
+		kobject_del(cluster_info_kobj);
 	return ret;
 }
 
@@ -5560,21 +5574,34 @@ static struct kobj_attribute bucket_info_attr =
 static int msm_thermal_add_bucket_info_nodes(void)
 {
 	struct kobject *module_kobj = NULL;
+	struct kobject *bucket_info_kobj = NULL;
 	int ret = 0;
 
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
 		pr_err("cannot find kobject\n");
-		return -ENOENT;
+		ret = -ENOENT;
+		goto add_bucket_info_nodes_exit;
+	}
+	bucket_info_kobj = kobject_create_and_add("bucket_info", module_kobj);
+	if (!bucket_info_kobj) {
+		pr_err("cannot create bucket_info kobject\n");
+		ret = -ENOMEM;
+		goto add_bucket_info_nodes_exit;
 	}
 	sysfs_attr_init(&bucket_info_attr.attr);
-	ret = sysfs_create_file(module_kobj, &bucket_info_attr.attr);
+	ret = sysfs_create_file(bucket_info_kobj, &bucket_info_attr.attr);
 	if (ret) {
 		pr_err(
 		"cannot create bucket info kobject attribute. err:%d\n", ret);
-		return ret;
+		goto add_bucket_info_nodes_exit;
 	}
 
+	return ret;
+
+add_bucket_info_nodes_exit:
+	if (ret && bucket_info_kobj)
+		kobject_del(bucket_info_kobj);
 	return ret;
 }
 
@@ -5583,6 +5610,7 @@ static struct kobj_attribute sensor_info_attr =
 static int msm_thermal_add_sensor_info_nodes(void)
 {
 	struct kobject *module_kobj = NULL;
+	struct kobject *sensor_info_kobj = NULL;
 	int ret = 0;
 
 	if (!sensor_info_probed) {
@@ -5595,17 +5623,29 @@ static int msm_thermal_add_sensor_info_nodes(void)
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
 		pr_err("cannot find kobject\n");
-		return -ENOENT;
+		ret = -ENOENT;
+		goto add_sensor_info_nodes_exit;
+	}
+	sensor_info_kobj = kobject_create_and_add("sensor_info", module_kobj);
+	if (!sensor_info_kobj) {
+		pr_err("cannot create sensor_info kobject\n");
+		ret = -ENOMEM;
+		goto add_sensor_info_nodes_exit;
 	}
 	sysfs_attr_init(&sensor_info_attr.attr);
-	ret = sysfs_create_file(module_kobj, &sensor_info_attr.attr);
+	ret = sysfs_create_file(sensor_info_kobj, &sensor_info_attr.attr);
 	if (ret) {
 		pr_err(
 		"cannot create sensor info kobject attribute. err:%d\n",
 		ret);
-		return ret;
+		goto add_sensor_info_nodes_exit;
 	}
 
+	return ret;
+
+add_sensor_info_nodes_exit:
+	if (ret && sensor_info_kobj)
+		kobject_del(sensor_info_kobj);
 	return ret;
 }
 
